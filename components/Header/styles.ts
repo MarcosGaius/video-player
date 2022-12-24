@@ -5,16 +5,14 @@ export const MainHeader = styled.header`
   z-index: 1;
 
   display: flex;
-  justify-content: center;
   align-items: center;
-  padding: 1.2rem;
+  padding: 0.8rem 5rem;
 
-  width: 100vw;
-  height: 5rem;
+  width: 100%;
 
   background-color: var(--accent-background);
 
-  P {
+  p {
     background-color: var(--text-color);
     color: var(--main-background);
     font-weight: 600;

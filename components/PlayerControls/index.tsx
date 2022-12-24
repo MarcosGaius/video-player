@@ -1,17 +1,18 @@
-import { useEffect, useState, ChangeEvent, useCallback, createRef } from "react";
+import { useEffect, useState, ChangeEvent, useCallback, createRef, MouseEvent } from "react";
 import * as S from "./styles";
 import {
-  IoRefreshSharp,
-  IoPlaySharp,
-  IoPlaySkipForwardSharp,
-  IoVolumeHighSharp,
-  IoVolumeMuteSharp,
-  IoPauseSharp,
-  IoVolumeLowSharp,
-} from "react-icons/io5";
-import { MdOutlineFullscreen, MdOutlineFullscreenExit } from "react-icons/md";
+  IoMdPlay,
+  IoMdPause,
+  IoMdSkipForward,
+  IoMdVolumeLow,
+  IoMdVolumeOff,
+  IoMdVolumeHigh,
+  IoMdRefresh,
+  IoMdSettings,
+  IoMdExpand,
+  IoMdContract,
+} from "react-icons/io";
 import { TbRectangle } from "react-icons/tb";
-import { GoGear } from "react-icons/go";
 import { useContext } from "react";
 import { VideoContext } from "../../providers/Video";
 import { formatSecondsToString } from "../../utils/formatSecondsToString";
@@ -19,11 +20,13 @@ import RangeInput from "../RangeInput";
 import { ProgressBar } from "../ProgressBar";
 
 export default function PlayerControls() {
-  const { currentVideo } = useContext(VideoContext);
-  const progressRef = createRef<HTMLProgressElement>();
-  const [videoVolume, setVideoVolume] = useState<number>(Number(localStorage.getItem("@videoplayer:prefered_volume") || 0.5));
+  const { currentVideo, setShowVideoLoading } = useContext(VideoContext);
+
+  const progressRef = createRef<HTMLDivElement>();
+
+  const [videoVolume, setVideoVolume] = useState<number>(Number(localStorage.getItem("@videoplayer:prefered_volume")) || 0.5);
   const [currentVideoTime, setCurrentVideoTime] = useState<number>(0);
-  const [isVideoMuted, setIsVideoMuted] = useState<boolean>(currentVideo?.muted || false);
+  const [isVideoMuted, setIsVideoMuted] = useState<boolean>(localStorage.getItem("@videoplayer:muted") === "true");
   const [isVideoPaused, setIsVideoPaused] = useState<boolean>(true);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
 
@@ -43,13 +46,13 @@ export default function PlayerControls() {
     if (currentVideo) {
       currentVideo.muted = !currentVideo.muted;
       setIsVideoMuted(currentVideo.muted);
-      setVideoVolume(currentVideo.volume);
+      localStorage.setItem("@videoplayer:muted", `${currentVideo.muted}`);
     }
   }, [currentVideo]);
 
   const skipVideoToEnd = useCallback(() => {
     if (currentVideo) {
-      currentVideo.currentTime += currentVideo.duration - 1;
+      currentVideo.currentTime = currentVideo.duration - 0.5;
     }
   }, [currentVideo]);
 
@@ -58,28 +61,26 @@ export default function PlayerControls() {
       if (currentVideo) {
         const value = Number(e.target.value) / 100;
         currentVideo.volume = value;
-        setVideoVolume(value);
 
         if (value === 0) {
           setIsVideoMuted(true);
+          localStorage.setItem("@videoplayer:muted", "true");
         } else {
+          setVideoVolume(value);
           setIsVideoMuted(false);
+          localStorage.setItem("@videoplayer:prefered_volume", `${value}`);
+          localStorage.setItem("@videoplayer:muted", "false");
         }
-
-        localStorage.setItem("@videoplayer:prefered_volume", `${value}`);
       }
     },
     [currentVideo]
   );
 
   const handleFullscreen = useCallback(async () => {
-    console.log("document.fullscreenElement", document.fullscreenElement);
     if (document.fullscreenElement) {
       await document.exitFullscreen();
-      setIsFullscreen(false);
     } else {
       await currentVideo?.parentElement?.requestFullscreen();
-      setIsFullscreen(true);
     }
   }, [currentVideo]);
 
@@ -87,9 +88,13 @@ export default function PlayerControls() {
     if (currentVideo) {
       const progressBar = progressRef.current;
       currentVideo.volume = videoVolume;
+      currentVideo.muted = isVideoMuted;
 
       const handleTimeUpdate = () => {
-        setCurrentVideoTime(currentVideo.currentTime);
+        if (currentVideoTime !== currentVideo.currentTime) {
+          setCurrentVideoTime(currentVideo.currentTime);
+          setShowVideoLoading(false);
+        }
       };
 
       const handleEndedVideo = () => {
@@ -98,62 +103,70 @@ export default function PlayerControls() {
 
       let isDragging = false;
 
-      const handleBarDragging = (event: any, isClick = false) => {
-        if (isDragging || isClick) {
-          const totalWidth = event.target.offsetWidth;
-          const clickedWidth = event.offsetX;
+      const isDraggingSetter = (bool: boolean) => {
+        isDragging = bool;
+      };
 
-          currentVideo.currentTime = (clickedWidth / totalWidth) * currentVideo.duration;
-          setCurrentVideoTime(currentVideo.currentTime);
+      const handleBarDragging = (event: any) => {
+        if (isDragging || event.type === "click") {
+          const progressRectangle = event.target.getBoundingClientRect();
+          const clickedWidth = event.pageX - progressRectangle.left;
+          const totalWidth = progressBar!.offsetWidth;
+
+          // Reducing precision to reduce seeking blocking/delay
+          const newVideoTime = Number(((clickedWidth / totalWidth) * currentVideo.duration).toFixed(2));
+          setCurrentVideoTime(newVideoTime);
+
+          currentVideo.currentTime = newVideoTime;
         }
       };
 
-      progressBar?.addEventListener("click", (e) => handleBarDragging(e, true));
+      const handleFullScreenChange = () => {
+        setIsFullscreen((currentValue) => !currentValue);
+      };
 
-      progressBar?.addEventListener("mousedown", () => {
-        isDragging = true;
-      });
+      const handleVideoSeek = (event: any) => {
+        if (event?.type === "seeking") {
+          setShowVideoLoading(true);
+        } else {
+          setShowVideoLoading(false);
+        }
+      };
 
-      progressBar?.addEventListener("mouseup", (e) => {
-        isDragging = false;
-        handleBarDragging(e);
-      });
-
-      progressBar?.addEventListener("mouseleave", (e) => {
-        isDragging = false;
-        handleBarDragging(e);
-      });
-
+      progressBar?.addEventListener("click", (e) => handleBarDragging(e));
+      progressBar?.addEventListener("mousedown", () => isDraggingSetter(true));
+      progressBar?.addEventListener("mouseup", (e) => isDraggingSetter(false));
+      progressBar?.addEventListener("mouseleave", (e) => isDraggingSetter(false));
       progressBar?.addEventListener("mousemove", (e) => handleBarDragging(e));
 
       currentVideo.addEventListener("timeupdate", handleTimeUpdate);
       currentVideo.addEventListener("ended", handleEndedVideo);
       currentVideo.addEventListener("click", playOrPauseVideo);
+      currentVideo.addEventListener("seeking", handleVideoSeek);
+      currentVideo.addEventListener("seeked", handleVideoSeek);
+
+      document.addEventListener("fullscreenchange", handleFullScreenChange);
 
       return () => {
-        progressBar?.addEventListener("click", (e) => handleBarDragging(e, true));
-        progressBar?.removeEventListener("mousedown", () => {
-          isDragging = true;
-        });
-        progressBar?.addEventListener("mouseup", (e) => {
-          isDragging = false;
-          handleBarDragging(e);
-        });
+        progressBar?.removeEventListener("click", (e) => handleBarDragging(e));
+        progressBar?.removeEventListener("mousedown", () => isDraggingSetter(true));
+        progressBar?.removeEventListener("mouseup", (e) => isDraggingSetter(false));
+        progressBar?.removeEventListener("mouseleave", (e) => isDraggingSetter(false));
 
-        progressBar?.addEventListener("mouseleave", (e) => {
-          isDragging = false;
-          handleBarDragging(e);
-        });
         currentVideo.removeEventListener("timeupdate", handleTimeUpdate);
         currentVideo.removeEventListener("ended", handleEndedVideo);
         currentVideo.removeEventListener("click", playOrPauseVideo);
+        currentVideo.removeEventListener("seeking", handleVideoSeek);
+        currentVideo.removeEventListener("seeked", handleVideoSeek);
+
+        document.removeEventListener("fullscreenchange", handleFullScreenChange);
       };
     }
-  }, [currentVideo, isVideoPaused, videoVolume, progressRef, playOrPauseVideo]);
+  }, [currentVideo, isVideoPaused, videoVolume, progressRef, playOrPauseVideo, currentVideoTime, setShowVideoLoading, isVideoMuted]);
 
   return (
     <S.ControlsContainer id="controls-container">
-      <ProgressBar value={currentVideoTime} max={currentVideo?.duration} ref={progressRef}></ProgressBar>
+      <ProgressBar value={currentVideoTime} max={currentVideo?.duration || 0} ref={progressRef}></ProgressBar>
       <S.ControlButtons>
         <S.LeftControls>
           <li>
@@ -161,26 +174,18 @@ export default function PlayerControls() {
               {
                 // If the video is not finished yet, verifies if the video paused and shows the respective icon, else show the reload icon.
               }
-              {currentVideo?.currentTime !== currentVideo?.duration ? (
-                isVideoPaused ? (
-                  <IoPlaySharp />
-                ) : (
-                  <IoPauseSharp />
-                )
-              ) : (
-                <IoRefreshSharp />
-              )}
+              {currentVideo?.currentTime !== currentVideo?.duration ? isVideoPaused ? <IoMdPlay /> : <IoMdPause /> : <IoMdRefresh />}
             </button>
           </li>
           <li>
             <button onClick={skipVideoToEnd} aria-label="Skip to end">
-              <IoPlaySkipForwardSharp />
+              <IoMdSkipForward />
             </button>
           </li>
           <li>
             <div className="volumeControls">
               <button onClick={muteVideo} aria-label="Volume">
-                {isVideoMuted ? <IoVolumeMuteSharp /> : videoVolume <= 0.5 ? <IoVolumeLowSharp /> : <IoVolumeHighSharp />}
+                {isVideoMuted ? <IoMdVolumeOff /> : videoVolume <= 0.5 ? <IoMdVolumeLow /> : <IoMdVolumeHigh />}
               </button>
               <RangeInput defaultValue={isVideoMuted ? 0 : videoVolume * 100} onChange={handleVolumeChange} />
             </div>
@@ -192,7 +197,7 @@ export default function PlayerControls() {
         <S.RightControls>
           <li>
             <button aria-label="Configurations">
-              <GoGear />
+              <IoMdSettings />
             </button>
           </li>
           <li>
@@ -202,7 +207,7 @@ export default function PlayerControls() {
           </li>
           <li>
             <button onClick={handleFullscreen} aria-label="Fullscreen Mode">
-              {isFullscreen ? <MdOutlineFullscreenExit /> : <MdOutlineFullscreen />}
+              {isFullscreen ? <IoMdContract /> : <IoMdExpand />}
             </button>
           </li>
         </S.RightControls>

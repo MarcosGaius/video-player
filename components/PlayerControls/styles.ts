@@ -4,19 +4,15 @@ export const ControlsContainer = styled.div`
   position: absolute;
   bottom: 0;
 
-  display: flex;
+  display: none;
   flex-direction: column;
   justify-content: center;
-  gap: 0.8rem;
+  gap: 0.3rem;
 
   width: 100%;
   height: auto;
 
   padding: 0.8rem 1.2rem;
-
-  progress {
-    width: 100%;
-  }
 
   button {
     display: flex;
@@ -29,8 +25,8 @@ export const ControlsContainer = styled.div`
     border: none;
     outline: none;
 
-    width: 1.8rem;
-    height: 1.8rem;
+    width: 1.5rem;
+    height: 1.5rem;
 
     cursor: pointer;
 

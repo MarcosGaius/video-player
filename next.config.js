@@ -10,6 +10,9 @@ const nextConfig = {
   experimental: {
     fontLoaders: [{ loader: "@next/font/google", options: { subsets: ["latin"] } }],
   },
+  images: {
+    domains: ["i.ytimg.com"],
+  },
 };
 
 module.exports = nextConfig;
