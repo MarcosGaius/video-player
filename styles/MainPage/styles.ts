@@ -1,24 +1,37 @@
 import styled from "styled-components";
 
 export const MainContainer = styled.main`
-  --suggestion-width: 400px;
+  --suggestion-width: auto;
 
   position: absolute;
-  top: 5rem;
+  top: 4rem;
 
   display: flex;
-  /* flex-wrap: wrap; */
+  flex-direction: column;
   gap: 2rem;
   justify-content: space-between;
-  /* align-items: center; */
 
   min-height: 100vh;
 
-  padding: 2rem 5rem;
+  padding: 0;
 
   overflow-x: hidden;
 
   font-family: var(--font-roboto);
+
+  @media screen and (min-width: 320px) {
+    padding: 1rem;
+    top: 5rem;
+  }
+
+  @media screen and (min-width: 768px) {
+    flex-direction: row;
+  }
+
+  @media screen and (min-width: 1024px) {
+    padding: 2rem 5rem;
+    --suggestion-width: 400px;
+  }
 `;
 
 export const VideoContainer = styled.section`
@@ -35,10 +48,16 @@ export const VideoDetailsContainer = styled.section`
   flex-direction: column;
   gap: 1rem;
 
+  padding: 0 0.8rem;
+
   h1 {
     color: var(--text-color);
     font-weight: 500;
     font-size: 1.2rem;
+  }
+
+  @media screen and (min-width: 320px) {
+    padding: 0;
   }
 `;
 
@@ -69,6 +88,7 @@ export const DescriptionContainer = styled.div`
 
   .videoStats {
     display: flex;
+    flex-wrap: wrap;
     gap: 0.5rem;
 
     font-weight: 500;

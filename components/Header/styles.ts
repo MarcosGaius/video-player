@@ -6,9 +6,11 @@ export const MainHeader = styled.header`
 
   display: flex;
   align-items: center;
-  padding: 0.8rem 5rem;
+  justify-content: center;
+  padding: 0;
 
   width: 100%;
+  height: 4rem;
 
   background-color: var(--accent-background);
 
@@ -17,5 +19,14 @@ export const MainHeader = styled.header`
     color: var(--main-background);
     font-weight: 600;
     padding: 0.5rem;
+  }
+
+  @media screen and (min-width: 320px) {
+    justify-content: initial;
+    padding: 1rem;
+  }
+
+  @media screen and (min-width: 1024px) {
+    padding: 2rem 5rem;
   }
 `;

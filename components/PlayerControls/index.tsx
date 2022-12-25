@@ -30,17 +30,20 @@ export default function PlayerControls() {
   const [isVideoPaused, setIsVideoPaused] = useState<boolean>(true);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
 
-  const playOrPauseVideo = useCallback(() => {
-    if (currentVideo) {
-      if (currentVideo.paused || currentVideo.ended) {
-        currentVideo.play();
-        setIsVideoPaused(false);
-      } else {
-        currentVideo.pause();
-        setIsVideoPaused(true);
+  const playOrPauseVideo = useCallback(
+    (e: any) => {
+      if (currentVideo) {
+        if (currentVideo.paused || currentVideo.ended) {
+          currentVideo.play();
+          setIsVideoPaused(false);
+        } else {
+          currentVideo.pause();
+          setIsVideoPaused(true);
+        }
       }
-    }
-  }, [currentVideo]);
+    },
+    [currentVideo]
+  );
 
   const muteVideo = useCallback(() => {
     if (currentVideo) {
@@ -166,10 +169,10 @@ export default function PlayerControls() {
 
   return (
     <S.ControlsContainer id="controls-container">
-      <ProgressBar value={currentVideoTime} max={currentVideo?.duration || 0} ref={progressRef}></ProgressBar>
+      <ProgressBar id="progress-bar" value={currentVideoTime} max={currentVideo?.duration || 0} ref={progressRef}></ProgressBar>
       <S.ControlButtons>
         <S.LeftControls>
-          <li>
+          <li id="play-button">
             <button onClick={playOrPauseVideo} aria-label="Play and Pause">
               {
                 // If the video is not finished yet, verifies if the video paused and shows the respective icon, else show the reload icon.
@@ -177,12 +180,12 @@ export default function PlayerControls() {
               {currentVideo?.currentTime !== currentVideo?.duration ? isVideoPaused ? <IoMdPlay /> : <IoMdPause /> : <IoMdRefresh />}
             </button>
           </li>
-          <li>
+          <li id="skip-button">
             <button onClick={skipVideoToEnd} aria-label="Skip to end">
               <IoMdSkipForward />
             </button>
           </li>
-          <li>
+          <li id="volume-button">
             <div className="volumeControls">
               <button onClick={muteVideo} aria-label="Volume">
                 {isVideoMuted ? <IoMdVolumeOff /> : videoVolume <= 0.5 ? <IoMdVolumeLow /> : <IoMdVolumeHigh />}
@@ -190,22 +193,22 @@ export default function PlayerControls() {
               <RangeInput defaultValue={isVideoMuted ? 0 : videoVolume * 100} onChange={handleVolumeChange} />
             </div>
           </li>
-          <li className="videoTimer">
+          <li id="video-timer" className="videoTimer">
             <p>{`${formatSecondsToString(currentVideoTime || 0)} / ${formatSecondsToString(currentVideo?.duration || 0)}`}</p>
           </li>
         </S.LeftControls>
         <S.RightControls>
-          <li>
-            <button aria-label="Configurations">
+          <li id="settings-button">
+            <button aria-label="Settings">
               <IoMdSettings />
             </button>
           </li>
-          <li>
+          <li id="theater-button">
             <button aria-label="Theater Mode">
               <TbRectangle />
             </button>
           </li>
-          <li>
+          <li id="fullscreen-button">
             <button onClick={handleFullscreen} aria-label="Fullscreen Mode">
               {isFullscreen ? <IoMdContract /> : <IoMdExpand />}
             </button>

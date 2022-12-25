@@ -12,6 +12,12 @@ export const ProgressBarWrapper = styled.div`
 
   padding-bottom: 0.5rem;
 
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -o-user-select: none;
+  user-select: none;
+
   &:hover div::after {
     opacity: 1;
     transform: scale(100%);
@@ -31,13 +37,13 @@ interface ISliderProps {
   readonly "data-max": number;
 }
 
-export const ProgressBarSlider = styled.div<ISliderProps>`
+export const ProgressBarSlider = styled.div.attrs<ISliderProps>((props) => ({
+  style: {
+    width: `${(props["data-value"] / props["data-max"]) * 100}%`,
+  },
+}))`
   position: relative;
 
-  width: ${(props) => {
-    const value = (props["data-value"] / props["data-max"]) * 100;
-    return `${value}%`;
-  }};
   height: 100%;
 
   background-color: var(--brand-color);
