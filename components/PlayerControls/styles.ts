@@ -8,6 +8,8 @@ export const ControlsContainer = styled.div`
   flex-direction: column-reverse;
   justify-content: space-between;
 
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.6));
+
   width: 100%;
   height: 100%;
 
@@ -65,8 +67,7 @@ export const ControlsContainer = styled.div`
     justify-content: initial;
     gap: 0.3rem;
 
-    #volume-button,
-    #theater-button {
+    #volume-button {
       display: flex;
     }
 
@@ -77,6 +78,11 @@ export const ControlsContainer = styled.div`
     button {
       width: 1.5rem;
       height: 1.5rem;
+    }
+  }
+  @media screen and (min-width: 1024px) {
+    #theater-button {
+      display: flex;
     }
   }
 `;

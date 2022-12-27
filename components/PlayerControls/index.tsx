@@ -1,4 +1,4 @@
-import { useEffect, useState, ChangeEvent, useCallback, createRef, MouseEvent } from "react";
+import { useEffect, useState, ChangeEvent, useCallback, createRef } from "react";
 import * as S from "./styles";
 import {
   IoMdPlay,
@@ -12,15 +12,15 @@ import {
   IoMdExpand,
   IoMdContract,
 } from "react-icons/io";
+import { formatSecondsToString, checkIsTouchscreenDevice } from "../../utils";
 import { TbRectangle } from "react-icons/tb";
 import { useContext } from "react";
 import { VideoContext } from "../../providers/Video";
-import { formatSecondsToString } from "../../utils/formatSecondsToString";
-import RangeInput from "../RangeInput";
 import { ProgressBar } from "../ProgressBar";
+import RangeInput from "../RangeInput";
 
 export default function PlayerControls() {
-  const { currentVideo, setShowVideoLoading } = useContext(VideoContext);
+  const { currentVideo, setShowVideoLoading, setIsTheaterMode } = useContext(VideoContext);
 
   const progressRef = createRef<HTMLDivElement>();
 
@@ -87,8 +87,14 @@ export default function PlayerControls() {
     }
   }, [currentVideo]);
 
+  const handleTheaterMode = useCallback(() => {
+    setIsTheaterMode((currentValue) => !currentValue);
+  }, [setIsTheaterMode]);
+
   useEffect(() => {
     if (currentVideo) {
+      const isTouchDevice = checkIsTouchscreenDevice();
+
       const progressBar = progressRef.current;
       currentVideo.volume = videoVolume;
       currentVideo.muted = isVideoMuted;
@@ -113,7 +119,12 @@ export default function PlayerControls() {
       const handleBarDragging = (event: any) => {
         if (isDragging || event.type === "click") {
           const progressRectangle = event.target.getBoundingClientRect();
-          const clickedWidth = event.pageX - progressRectangle.left;
+
+          const clickedWidth =
+            isTouchDevice && event.type !== "click"
+              ? event.targetTouches[0].pageX - progressRectangle.left
+              : event.pageX - progressRectangle.left;
+
           const totalWidth = progressBar!.offsetWidth;
 
           // Reducing precision to reduce seeking blocking/delay
@@ -136,29 +147,62 @@ export default function PlayerControls() {
         }
       };
 
+      // Listeners for both device types (Touchscreen / Mouse)
+
       progressBar?.addEventListener("click", (e) => handleBarDragging(e));
-      progressBar?.addEventListener("mousedown", () => isDraggingSetter(true));
-      progressBar?.addEventListener("mouseup", (e) => isDraggingSetter(false));
-      progressBar?.addEventListener("mouseleave", (e) => isDraggingSetter(false));
-      progressBar?.addEventListener("mousemove", (e) => handleBarDragging(e));
 
       currentVideo.addEventListener("timeupdate", handleTimeUpdate);
       currentVideo.addEventListener("ended", handleEndedVideo);
-      currentVideo.addEventListener("click", playOrPauseVideo);
       currentVideo.addEventListener("seeking", handleVideoSeek);
       currentVideo.addEventListener("seeked", handleVideoSeek);
 
       document.addEventListener("fullscreenchange", handleFullScreenChange);
 
+      // Listeners for exclusive device types (Touchscreen / Mouse)
+
+      if (isTouchDevice) {
+        let hideTimeoutId: NodeJS.Timeout;
+
+        const handleHideControls = (e: any) => {
+          const eventTarget = e.target;
+
+          if (eventTarget.localName !== "svg" && eventTarget.localName !== "path" && eventTarget.dataset["type"] !== "controller") {
+            progressBar?.parentElement?.setAttribute("style", "display: none");
+
+            clearTimeout(hideTimeoutId);
+          }
+        };
+
+        const handleShowControls = (e: any) => {
+          progressBar?.parentElement?.setAttribute("style", "display: flex");
+
+          hideTimeoutId = setTimeout(() => {
+            progressBar?.parentElement?.setAttribute("style", "display: none");
+          }, 3000);
+        };
+
+        progressBar?.addEventListener("touchstart", () => isDraggingSetter(true));
+        progressBar?.addEventListener("touchend", () => isDraggingSetter(false));
+        progressBar?.addEventListener("touchcancel", () => isDraggingSetter(false));
+        progressBar?.addEventListener("touchmove", (e) => handleBarDragging(e));
+
+        progressBar?.parentElement?.addEventListener("touchend", handleHideControls);
+
+        currentVideo.addEventListener("touchend", handleShowControls);
+      } else {
+        progressBar?.addEventListener("mousemove", (e) => handleBarDragging(e));
+        progressBar?.addEventListener("mousedown", () => isDraggingSetter(true));
+        progressBar?.addEventListener("mouseup", () => isDraggingSetter(false));
+        progressBar?.addEventListener("mouseleave", () => isDraggingSetter(false));
+
+        currentVideo.addEventListener("click", playOrPauseVideo);
+      }
+
       return () => {
         progressBar?.removeEventListener("click", (e) => handleBarDragging(e));
-        progressBar?.removeEventListener("mousedown", () => isDraggingSetter(true));
-        progressBar?.removeEventListener("mouseup", (e) => isDraggingSetter(false));
-        progressBar?.removeEventListener("mouseleave", (e) => isDraggingSetter(false));
 
         currentVideo.removeEventListener("timeupdate", handleTimeUpdate);
         currentVideo.removeEventListener("ended", handleEndedVideo);
-        currentVideo.removeEventListener("click", playOrPauseVideo);
         currentVideo.removeEventListener("seeking", handleVideoSeek);
         currentVideo.removeEventListener("seeked", handleVideoSeek);
 
@@ -204,7 +248,7 @@ export default function PlayerControls() {
             </button>
           </li>
           <li id="theater-button">
-            <button aria-label="Theater Mode">
+            <button aria-label="Theater Mode" onClick={handleTheaterMode}>
               <TbRectangle />
             </button>
           </li>

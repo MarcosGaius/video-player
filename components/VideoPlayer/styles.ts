@@ -14,8 +14,18 @@ export const VideoWrapper = styled.div`
     height: 100%;
   }
 
-  &:hover > #controls-container {
-    display: flex;
-    background: linear-gradient(transparent, rgba(0, 0, 0, 0.75));
+  &.theaterMode__video {
+    background-color: #000000;
+
+    video {
+      width: auto;
+      height: 80vh;
+    }
+  }
+
+  @media screen and (min-width: 768px) {
+    &:hover > #controls-container {
+      display: flex;
+    }
   }
 `;

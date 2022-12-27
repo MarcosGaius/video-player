@@ -39,7 +39,7 @@ interface ISliderProps {
 
 export const ProgressBarSlider = styled.div.attrs<ISliderProps>((props) => ({
   style: {
-    width: `${(props["data-value"] / props["data-max"]) * 100}%`,
+    width: props["data-value"] ? `${(props["data-value"] / props["data-max"]) * 100}%` : "0%",
   },
 }))`
   position: relative;

@@ -1,8 +1,6 @@
 import styled from "styled-components";
 
 export const MainContainer = styled.main`
-  --suggestion-width: auto;
-
   position: absolute;
   top: 4rem;
 
@@ -19,18 +17,33 @@ export const MainContainer = styled.main`
 
   font-family: var(--font-roboto);
 
+  &.theaterMode__main {
+    flex-direction: column;
+    padding-top: 0;
+
+    top: 4rem;
+    padding: 0;
+
+    #details-container,
+    #suggested-container {
+      padding: 0 5rem;
+    }
+
+    #suggested-container {
+      width: 100%;
+      max-width: 100%;
+      margin-bottom: 5rem;
+    }
+  }
+
   @media screen and (min-width: 320px) {
     padding: 1rem;
     top: 5rem;
   }
 
-  @media screen and (min-width: 768px) {
-    flex-direction: row;
-  }
-
   @media screen and (min-width: 1024px) {
+    flex-direction: row;
     padding: 2rem 5rem;
-    --suggestion-width: 400px;
   }
 `;
 
@@ -39,7 +52,7 @@ export const VideoContainer = styled.section`
   flex-direction: column;
   gap: 1rem;
 
-  width: calc(100% - var(--suggestion-width));
+  width: auto;
   height: auto;
 `;
 

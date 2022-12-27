@@ -10,19 +10,12 @@ export const ItemContainer = styled.li`
     height: auto;
   }
 
-  @media screen and (min-width: 320px) {
+  @media screen and (min-width: 500px) {
     img {
       width: 170px;
       height: 90px;
       border-radius: 5px;
     }
-  }
-
-  @media screen and (min-width: 320px) and (max-width: 767px) {
-    flex-direction: row;
-  }
-
-  @media screen and (min-width: 1024px) {
     flex-direction: row;
   }
 `;

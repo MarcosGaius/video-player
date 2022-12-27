@@ -4,8 +4,12 @@ import VideoPlayer from "../components/VideoPlayer";
 import Header from "../components/Header";
 import Text from "../components/Text";
 import SuggestedVideos from "../components/SuggestedVideos";
+import { useContext } from "react";
+import { VideoContext } from "../providers/Video";
 
 export default function Home() {
+  const { isTheaterMode } = useContext(VideoContext);
+
   return (
     <>
       <Head>
@@ -15,10 +19,10 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <Header />
-      <S.MainContainer>
+      <S.MainContainer className={isTheaterMode ? "theaterMode__main" : ""}>
         <S.VideoContainer>
           <VideoPlayer />
-          <S.VideoDetailsContainer>
+          <S.VideoDetailsContainer id="details-container">
             <h1>The Product Review: A Comprehensive Look at the Pros and Cons</h1>
             <S.DescriptionContainer>
               <div className="videoStats">
@@ -38,7 +42,7 @@ export default function Home() {
             </S.DescriptionContainer>
           </S.VideoDetailsContainer>
         </S.VideoContainer>
-        <SuggestedVideos />
+        <SuggestedVideos id="suggested-container" />
       </S.MainContainer>
     </>
   );

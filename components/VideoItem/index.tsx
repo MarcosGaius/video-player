@@ -1,11 +1,22 @@
+import { useEffect, useContext, useState } from "react";
 import Image from "next/image";
 import { ISuggestedVideos } from "../../mock/video";
 import * as S from "./styles";
+import { VideoContext } from "../../providers/Video";
 
 export default function VideoItem({ thumbnail, title, channel, views, date, duration }: ISuggestedVideos) {
-  if (title.length > 45) {
-    title = title.slice(0, 45) + "...";
-  }
+  const [videoTitle, setVideoTitle] = useState<string>(title);
+  const { isTheaterMode } = useContext(VideoContext);
+
+  useEffect(() => {
+    if (isTheaterMode) {
+      setVideoTitle(title);
+      return;
+    }
+    if (title.length > 45 && window.innerWidth > 1024) {
+      setVideoTitle(title.slice(0, 45) + "...");
+    }
+  }, [title, isTheaterMode]);
 
   return (
     <S.ItemContainer>
@@ -14,7 +25,7 @@ export default function VideoItem({ thumbnail, title, channel, views, date, dura
       </figure>
       <S.ItemDetails>
         <div className="videoTitle">
-          <p>{title}</p>
+          <p>{videoTitle}</p>
         </div>
         <div className="videoInfos">
           <small>{channel}</small>

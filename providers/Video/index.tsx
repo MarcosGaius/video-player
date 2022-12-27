@@ -1,5 +1,4 @@
-import { createContext, MutableRefObject, ReactNode, useState, SetStateAction, Dispatch } from "react";
-import VideoPlayer from "../../components/VideoPlayer";
+import { createContext, ReactNode, useState, SetStateAction, Dispatch } from "react";
 
 interface IVideoProviderProps {
   children: ReactNode;
@@ -10,6 +9,8 @@ interface IVideoProviderData {
   setCurrentVideo: Dispatch<SetStateAction<HTMLVideoElement | null>>;
   showVideoLoading: boolean;
   setShowVideoLoading: Dispatch<SetStateAction<boolean>>;
+  isTheaterMode: boolean;
+  setIsTheaterMode: Dispatch<SetStateAction<boolean>>;
 }
 
 export const VideoContext = createContext({} as IVideoProviderData);
@@ -17,9 +18,12 @@ export const VideoContext = createContext({} as IVideoProviderData);
 export default function VideoProvider({ children }: IVideoProviderProps) {
   const [currentVideo, setCurrentVideo] = useState<HTMLVideoElement | null>(null);
   const [showVideoLoading, setShowVideoLoading] = useState<boolean>(false);
+  const [isTheaterMode, setIsTheaterMode] = useState<boolean>(false);
 
   return (
-    <VideoContext.Provider value={{ currentVideo, setCurrentVideo, showVideoLoading, setShowVideoLoading }}>
+    <VideoContext.Provider
+      value={{ isTheaterMode, setIsTheaterMode, currentVideo, setCurrentVideo, showVideoLoading, setShowVideoLoading }}
+    >
       {children}
     </VideoContext.Provider>
   );

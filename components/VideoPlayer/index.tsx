@@ -8,7 +8,7 @@ import * as S from "./styles";
 export default function VideoPlayer() {
   const videoRef = createRef<HTMLVideoElement>();
   const [isVideoSuported, setIsVideoSuported] = useState<boolean>();
-  const { setCurrentVideo, showVideoLoading } = useContext(VideoContext);
+  const { setCurrentVideo, showVideoLoading, isTheaterMode } = useContext(VideoContext);
 
   useEffect(() => {
     setCurrentVideo(videoRef.current);
@@ -16,7 +16,7 @@ export default function VideoPlayer() {
   }, [setCurrentVideo, videoRef]);
 
   return (
-    <S.VideoWrapper>
+    <S.VideoWrapper className={isTheaterMode ? "theaterMode__video" : ""}>
       {showVideoLoading && <Loader />}
       <video controls={isVideoSuported ? false : true} preload="metadata" poster="" ref={videoRef}>
         <source src="/assets/videos/sample_1mb.mp4" type="" />

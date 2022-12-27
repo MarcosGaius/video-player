@@ -9,9 +9,9 @@ interface IProgressBarProps {
 
 export const ProgressBar = forwardRef(function ProgressBar({ value, max, id }: IProgressBarProps, ref: ForwardedRef<HTMLDivElement>) {
   return (
-    <S.ProgressBarWrapper ref={ref} id={id}>
-      <S.ProgressBar>
-        <S.ProgressBarSlider data-value={value} data-max={max} />
+    <S.ProgressBarWrapper ref={ref} id={id} data-type="controller">
+      <S.ProgressBar data-type="controller">
+        <S.ProgressBarSlider data-value={value} data-max={max} id="progress-bar-slider" data-type="controller" />
       </S.ProgressBar>
     </S.ProgressBarWrapper>
   );
