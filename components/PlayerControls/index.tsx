@@ -18,9 +18,10 @@ import { useContext } from "react";
 import { VideoContext } from "../../providers/Video";
 import { ProgressBar } from "../ProgressBar";
 import RangeInput from "../RangeInput";
+import SettingsMenu from "../SettingsMenu";
 
 export default function PlayerControls() {
-  const { currentVideo, setShowVideoLoading, setIsTheaterMode } = useContext(VideoContext);
+  const { currentVideo, setShowVideoLoading, setIsTheaterMode, isTheaterMode, setShowSettings, showSettings } = useContext(VideoContext);
 
   const progressRef = createRef<HTMLDivElement>();
 
@@ -29,6 +30,10 @@ export default function PlayerControls() {
   const [isVideoMuted, setIsVideoMuted] = useState<boolean>(localStorage.getItem("@videoplayer:muted") === "true");
   const [isVideoPaused, setIsVideoPaused] = useState<boolean>(true);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
+
+  const handleShowSettingsMenu = () => {
+    setShowSettings((currentValue) => !currentValue);
+  };
 
   const playOrPauseVideo = useCallback(
     (e: any) => {
@@ -83,9 +88,10 @@ export default function PlayerControls() {
     if (document.fullscreenElement) {
       await document.exitFullscreen();
     } else {
+      isTheaterMode && setIsTheaterMode(false);
       await currentVideo?.parentElement?.requestFullscreen();
     }
-  }, [currentVideo]);
+  }, [currentVideo, setIsTheaterMode, isTheaterMode]);
 
   const handleTheaterMode = useCallback(() => {
     setIsTheaterMode((currentValue) => !currentValue);
@@ -169,16 +175,20 @@ export default function PlayerControls() {
           if (eventTarget.localName !== "svg" && eventTarget.localName !== "path" && eventTarget.dataset["type"] !== "controller") {
             progressBar?.parentElement?.setAttribute("style", "display: none");
 
-            clearTimeout(hideTimeoutId);
+            if (showSettings) {
+              clearTimeout(hideTimeoutId);
+            }
           }
         };
 
         const handleShowControls = (e: any) => {
           progressBar?.parentElement?.setAttribute("style", "display: flex");
 
-          hideTimeoutId = setTimeout(() => {
-            progressBar?.parentElement?.setAttribute("style", "display: none");
-          }, 3000);
+          if (showSettings) {
+            hideTimeoutId = setTimeout(() => {
+              progressBar?.parentElement?.setAttribute("style", "display: none");
+            }, 3000);
+          }
         };
 
         progressBar?.addEventListener("touchstart", () => isDraggingSetter(true));
@@ -209,10 +219,20 @@ export default function PlayerControls() {
         document.removeEventListener("fullscreenchange", handleFullScreenChange);
       };
     }
-  }, [currentVideo, isVideoPaused, videoVolume, progressRef, playOrPauseVideo, currentVideoTime, setShowVideoLoading, isVideoMuted]);
+  }, [
+    currentVideo,
+    isVideoPaused,
+    videoVolume,
+    progressRef,
+    playOrPauseVideo,
+    currentVideoTime,
+    setShowVideoLoading,
+    isVideoMuted,
+    showSettings,
+  ]);
 
   return (
-    <S.ControlsContainer id="controls-container">
+    <S.ControlsContainer id="controls-container" className={showSettings ? "openSettings" : ""}>
       <ProgressBar id="progress-bar" value={currentVideoTime} max={currentVideo?.duration || 0} ref={progressRef}></ProgressBar>
       <S.ControlButtons>
         <S.LeftControls>
@@ -243,15 +263,17 @@ export default function PlayerControls() {
         </S.LeftControls>
         <S.RightControls>
           <li id="settings-button">
-            <button aria-label="Settings">
+            <button aria-label="Settings" onClick={handleShowSettingsMenu}>
               <IoMdSettings />
             </button>
           </li>
-          <li id="theater-button">
-            <button aria-label="Theater Mode" onClick={handleTheaterMode}>
-              <TbRectangle />
-            </button>
-          </li>
+          {!isFullscreen && (
+            <li id="theater-button">
+              <button aria-label="Theater Mode" onClick={handleTheaterMode}>
+                <TbRectangle />
+              </button>
+            </li>
+          )}
           <li id="fullscreen-button">
             <button onClick={handleFullscreen} aria-label="Fullscreen Mode">
               {isFullscreen ? <IoMdContract /> : <IoMdExpand />}
@@ -259,6 +281,7 @@ export default function PlayerControls() {
           </li>
         </S.RightControls>
       </S.ControlButtons>
+      {showSettings && <SettingsMenu />}
     </S.ControlsContainer>
   );
 }

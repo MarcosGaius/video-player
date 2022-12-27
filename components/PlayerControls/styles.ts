@@ -2,9 +2,15 @@ import styled from "styled-components";
 
 export const ControlsContainer = styled.div`
   position: absolute;
+  z-index: 5;
   bottom: 0;
 
   display: none;
+
+  &.openSettings {
+    display: flex;
+  }
+
   flex-direction: column-reverse;
   justify-content: space-between;
 

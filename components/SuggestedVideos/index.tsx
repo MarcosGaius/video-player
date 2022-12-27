@@ -23,8 +23,9 @@ export default function SuggestedVideos({ id }: ISuggestVideosProps) {
         setMenuElement(node);
       }
     },
-    [isTheaterMode]
     // eslint may warn, but is needed as the theater mode changes the filter container width (needed for the overflow check)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [isTheaterMode]
   );
 
   const handleFiltering = (e: MouseEvent<HTMLButtonElement>) => {

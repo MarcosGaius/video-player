@@ -1,7 +1,7 @@
 import styled from "styled-components";
 
 export const ProgressBarWrapper = styled.div`
-  --progress-bar-height: 0.4rem;
+  --progress-bar-height: 0.3rem;
 
   display: flex;
   flex-direction: column;
@@ -28,7 +28,7 @@ export const ProgressBar = styled.div`
   width: 100%;
   height: var(--progress-bar-height);
 
-  background-color: var(--text-accent-color);
+  background-color: rgba(221, 221, 221, 0.7);
   cursor: pointer;
 `;
 
