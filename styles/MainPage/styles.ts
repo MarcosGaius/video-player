@@ -1,6 +1,8 @@
 import styled from "styled-components";
 
 export const MainContainer = styled.main`
+  --main-container-padding: 0;
+
   position: absolute;
   top: 4rem;
 
@@ -11,7 +13,7 @@ export const MainContainer = styled.main`
 
   min-height: 100vh;
 
-  padding: 0;
+  padding: var(--main-container-padding);
 
   overflow-x: hidden;
 
@@ -37,13 +39,13 @@ export const MainContainer = styled.main`
   }
 
   @media screen and (min-width: 320px) {
-    padding: 1rem;
+    --main-container-padding: 1rem;
     top: 5rem;
   }
 
   @media screen and (min-width: 1024px) {
     flex-direction: row;
-    padding: 2rem 5rem;
+    --main-container-padding: 2rem 5rem;
   }
 `;
 

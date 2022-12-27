@@ -5,6 +5,7 @@ export const SuggestionsContainer = styled.section`
   flex-direction: column;
   gap: 1rem;
 
+  width: calc(100vw - var(--main-container-padding) * 2);
   max-width: 100vw;
   min-height: 100vh;
 
